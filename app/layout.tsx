@@ -8,19 +8,23 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import Footer from './components/footer'
 import { baseUrl } from './sitemap'
 
+const SITE_NAME = 'Next.js Portfolio Starter'
+const SITE_DESCRIPTION = 'This is my portfolio.'
+const SITE_LOCALE = 'en_US'
+
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Next.js Portfolio Starter',
-    template: '%s | Next.js Portfolio Starter',
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'This is my portfolio.',
+  description: SITE_DESCRIPTION,
   openGraph: {
     title: 'My Portfolio',
-    description: 'This is my portfolio.',
+    description: SITE_DESCRIPTION,
     url: baseUrl,
     siteName: 'My Portfolio',
-    locale: 'en_US',
+    locale: SITE_LOCALE,
     type: 'website',
   },
   robots: {
@@ -36,24 +40,28 @@ export const metadata: Metadata = {
   },
 }
 
-const cx = (...classes) => classes.filter(Boolean).join(' ')
+const THEME_CLASS_NAMES = 'text-black bg-white dark:text-white dark:bg-black'
+const BODY_CLASS_NAMES = 'antialiased max-w-xl mx-4 mt-8 lg:mx-auto'
+const MAIN_CLASS_NAMES = 'flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0'
 
-export default function RootLayout({
-  children,
-}: {
+const combineClassNames = (...classes: (string | boolean | undefined)[]): string =>
+  classes.filter(Boolean).join(' ')
+
+interface RootLayoutProps {
   children: React.ReactNode
-}) {
+}
+
+const RootLayout = ({ children }: RootLayoutProps) => {
+  const htmlClassNames = combineClassNames(
+    THEME_CLASS_NAMES,
+    GeistSans.variable,
+    GeistMono.variable
+  )
+
   return (
-    <html
-      lang="en"
-      className={cx(
-        'text-black bg-white dark:text-white dark:bg-black',
-        GeistSans.variable,
-        GeistMono.variable
-      )}
-    >
-      <body className="antialiased max-w-xl mx-4 mt-8 lg:mx-auto">
-        <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0">
+    <html lang="en" className={htmlClassNames}>
+      <body className={BODY_CLASS_NAMES}>
+        <main className={MAIN_CLASS_NAMES}>
           <Navbar />
           {children}
           <Footer />
@@ -64,3 +72,5 @@ export default function RootLayout({
     </html>
   )
 }
+
+export default RootLayout

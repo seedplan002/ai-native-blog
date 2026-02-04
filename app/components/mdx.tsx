@@ -4,79 +4,128 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import { highlight } from 'sugar-high'
 import React from 'react'
 
-function Table({ data }) {
-  let headers = data.headers.map((header, index) => (
-    <th key={index}>{header}</th>
-  ))
-  let rows = data.rows.map((row, index) => (
-    <tr key={index}>
-      {row.map((cell, cellIndex) => (
-        <td key={cellIndex}>{cell}</td>
-      ))}
-    </tr>
-  ))
-
-  return (
-    <table>
-      <thead>
-        <tr>{headers}</tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
-  )
+interface TableData {
+  headers: string[]
+  rows: string[][]
 }
 
-function CustomLink(props) {
-  let href = props.href
+interface TableProps {
+  data: TableData
+}
 
-  if (href.startsWith('/')) {
+interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  href: string
+  children: React.ReactNode
+}
+
+interface ImageProps extends React.ComponentProps<typeof Image> {
+  alt: string
+}
+
+interface CodeProps extends React.HTMLAttributes<HTMLElement> {
+  children: string
+}
+
+interface HeadingProps {
+  children: string
+}
+
+interface CustomMDXProps {
+  source: string
+  components?: Record<string, React.ComponentType<any>>
+}
+
+const isInternalLink = (href: string): boolean => href.startsWith('/')
+
+const isAnchorLink = (href: string): boolean => href.startsWith('#')
+
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-and-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+}
+
+const TableHeader: React.FC<{ headers: string[] }> = ({ headers }) => (
+  <thead>
+    <tr>
+      {headers.map((header, index) => (
+        <th key={index}>{header}</th>
+      ))}
+    </tr>
+  </thead>
+)
+
+const TableBody: React.FC<{ rows: string[][] }> = ({ rows }) => (
+  <tbody>
+    {rows.map((row, rowIndex) => (
+      <tr key={rowIndex}>
+        {row.map((cell, cellIndex) => (
+          <td key={cellIndex}>{cell}</td>
+        ))}
+      </tr>
+    ))}
+  </tbody>
+)
+
+const Table: React.FC<TableProps> = ({ data }) => (
+  <table>
+    <TableHeader headers={data.headers} />
+    <TableBody rows={data.rows} />
+  </table>
+)
+
+const CustomLink: React.FC<LinkProps> = ({ href, children, ...props }) => {
+  if (isInternalLink(href)) {
     return (
       <Link href={href} {...props}>
-        {props.children}
+        {children}
       </Link>
     )
   }
 
-  if (href.startsWith('#')) {
-    return <a {...props} />
+  if (isAnchorLink(href)) {
+    return <a href={href} {...props}>{children}</a>
   }
 
-  return <a target="_blank" rel="noopener noreferrer" {...props} />
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+      {children}
+    </a>
+  )
 }
 
-function RoundedImage(props) {
-  return <Image alt={props.alt} className="rounded-lg" {...props} />
+const RoundedImage: React.FC<ImageProps> = ({ alt, ...props }) => (
+  <Image alt={alt} className="rounded-lg" {...props} />
+)
+
+const Code: React.FC<CodeProps> = ({ children, ...props }) => {
+  const highlightedCode = highlight(children)
+  return <code dangerouslySetInnerHTML={{ __html: highlightedCode }} {...props} />
 }
 
-function Code({ children, ...props }) {
-  let codeHTML = highlight(children)
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+const createHeadingAnchorLink = (slug: string): React.ReactElement => {
+  return React.createElement('a', {
+    href: `#${slug}`,
+    key: `link-${slug}`,
+    className: 'anchor',
+  })
 }
 
-function slugify(str) {
-  return str
-    .toString()
-    .toLowerCase()
-    .trim() // Remove whitespace from both ends of a string
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-]+/g, '') // Remove all non-word characters except for -
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-}
+const createHeading = (level: number): React.FC<HeadingProps> => {
+  const Heading: React.FC<HeadingProps> = ({ children }) => {
+    const slug = slugify(children)
+    const headingTag = `h${level}`
+    const anchorLink = createHeadingAnchorLink(slug)
 
-function createHeading(level) {
-  const Heading = ({ children }) => {
-    let slug = slugify(children)
     return React.createElement(
-      `h${level}`,
+      headingTag,
       { id: slug },
-      [
-        React.createElement('a', {
-          href: `#${slug}`,
-          key: `link-${slug}`,
-          className: 'anchor',
-        }),
-      ],
+      [anchorLink],
       children
     )
   }
@@ -86,7 +135,7 @@ function createHeading(level) {
   return Heading
 }
 
-let components = {
+const MDX_COMPONENTS = {
   h1: createHeading(1),
   h2: createHeading(2),
   h3: createHeading(3),
@@ -99,11 +148,13 @@ let components = {
   Table,
 }
 
-export function CustomMDX(props) {
+export const CustomMDX: React.FC<CustomMDXProps> = ({ components: customComponents, ...props }) => {
+  const mergedComponents = { ...MDX_COMPONENTS, ...(customComponents || {}) }
+
   return (
     <MDXRemote
       {...props}
-      components={{ ...components, ...(props.components || {}) }}
+      components={mergedComponents}
     />
   )
 }
