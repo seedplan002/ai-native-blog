@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
-import { getAuthorById, getDefaultAuthor } from 'app/blog/authors'
+import { getAuthor } from 'app/blog/authors'
 import { AuthorProfile } from 'app/components/author-profile'
 import { baseUrl } from 'app/sitemap'
 
@@ -62,9 +62,7 @@ export default async function Blog({ params }) {
     notFound()
   }
 
-  let author =
-    (post.metadata.author && getAuthorById(post.metadata.author)) ||
-    getDefaultAuthor()
+  let author = getAuthor(post.metadata.author)
 
   return (
     <section>
