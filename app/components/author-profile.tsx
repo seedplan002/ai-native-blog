@@ -26,9 +26,27 @@ const STYLE_CLASSES = {
 } as const
 
 const AuthorAvatar = ({ name, avatarUrl }: AuthorAvatarProps) => {
+  const normalizedAvatarUrl = avatarUrl || '/authors/placeholder.svg'
+  const isExternalAvatar =
+    normalizedAvatarUrl.startsWith('http://') || normalizedAvatarUrl.startsWith('https://')
+
+  if (isExternalAvatar) {
+    // 외부 도메인 이미지는 next/image 도메인 설정 없이도 안전하게 로딩되도록 기본 img 태그 사용
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={normalizedAvatarUrl}
+        alt={name}
+        width={AVATAR_SIZE}
+        height={AVATAR_SIZE}
+        className={STYLE_CLASSES.avatar}
+      />
+    )
+  }
+
   return (
     <Image
-      src={avatarUrl}
+      src={normalizedAvatarUrl}
       alt={name}
       width={AVATAR_SIZE}
       height={AVATAR_SIZE}
