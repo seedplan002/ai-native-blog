@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
+import { ViewCount } from 'app/components/view-count'
 
 interface BlogPost {
   slug: string
@@ -38,9 +39,12 @@ const BlogPostItem = ({ slug, title, publishedAt }: BlogPostItemProps) => {
         <p className="text-neutral-600 dark:text-neutral-400 w-[100px] tabular-nums">
           {formattedDate}
         </p>
-        <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
-          {title}
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between flex-1">
+          <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
+            {title}
+          </p>
+          <ViewCount slug={slug} />
+        </div>
       </div>
     </Link>
   )
