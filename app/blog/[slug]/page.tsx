@@ -4,6 +4,8 @@ import { formatDate, getBlogPosts } from 'app/blog/utils'
 import { getAuthor } from 'app/blog/authors'
 import { AuthorProfile } from 'app/components/author-profile'
 import { baseUrl } from 'app/sitemap'
+import { LikeButton } from 'app/components/like-button'
+import { ViewCount } from 'app/components/view-count'
 
 interface PageParams {
   params: Promise<{ slug: string }>
@@ -154,7 +156,15 @@ const StructuredDataScript = ({ post, author }: { post: BlogPost; author: Author
   />
 )
 
-const BlogPostHeader = ({ title, publishedAt }: { title: string; publishedAt: string }) => (
+const BlogPostHeader = ({
+  title,
+  publishedAt,
+  slug,
+}: {
+  title: string
+  publishedAt: string
+  slug: string
+}) => (
   <>
     <h1 className="title font-semibold text-2xl tracking-tighter">
       {title}
@@ -163,6 +173,7 @@ const BlogPostHeader = ({ title, publishedAt }: { title: string; publishedAt: st
       <p className="text-sm text-neutral-600 dark:text-neutral-400">
         {formatDate(publishedAt)}
       </p>
+      <ViewCount slug={slug} />
     </div>
   </>
 )
@@ -189,8 +200,12 @@ export default async function Blog({ params }: PageParams) {
       <BlogPostHeader
         title={post.metadata.title}
         publishedAt={post.metadata.publishedAt}
+        slug={post.slug}
       />
       <BlogPostContent content={post.content} />
+      <div className="mt-6">
+        <LikeButton slug={post.slug} />
+      </div>
       <AuthorProfile author={postAuthor} />
     </section>
   )
