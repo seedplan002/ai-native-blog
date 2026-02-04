@@ -3,6 +3,12 @@ import '@testing-library/jest-dom'
 import { BlogPosts } from './posts'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
 
+jest.mock('app/components/view-count', () => ({
+  ViewCount: ({ slug }: { slug: string }) => (
+    <span data-testid={`view-count-${slug}`}>조회수 컴포넌트</span>
+  ),
+}))
+
 // Mock Next.js Link component
 jest.mock('next/link', () => {
   return ({ children, href, className, ...props }: any) => {

@@ -8,6 +8,12 @@ import { CustomMDX } from 'app/components/mdx'
 import { AuthorProfile } from 'app/components/author-profile'
 import { baseUrl } from 'app/sitemap'
 
+jest.mock('app/components/view-count', () => ({
+  ViewCount: ({ slug }: { slug: string }) => (
+    <span data-testid={`view-count-${slug}`}>조회수 컴포넌트</span>
+  ),
+}))
+
 // Mock dependencies
 jest.mock('next/navigation', () => ({
   notFound: jest.fn(),
